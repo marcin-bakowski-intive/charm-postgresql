@@ -1,10 +1,13 @@
 from functools import partial
 import ipaddress
 import random
+import re
 import string
 from urllib.parse import quote
 
 from charmtools import tools
+
+POSTGRESQL_VERSION_PATTERN = re.compile(r'PostgreSQL (\d+\.\d+) ')
 
 
 def create_pg_database_and_user(host, port, database, username=None):
@@ -34,7 +37,7 @@ def drop_pg_user(user):
 
 
 def _psql(query):
-    tools.run('sudo', '-u', 'postgres', 'psql', '-c', f'{query}')
+    return tools.run('sudo', '-u', 'postgres', 'psql', '-c', f'{query}')
 
 
 def _get_random_string(length):
@@ -79,3 +82,9 @@ def _addr_to_range(addr):
         return str(ipaddress.ip_network(addr, strict=False))
     except ValueError:
         return addr
+
+
+def get_version():
+    resp = _psql('SELECT version()').decode('utf-8')
+    m = POSTGRESQL_VERSION_PATTERN.search(resp)
+    return m.group(1) if m else 'UNKNOWN'

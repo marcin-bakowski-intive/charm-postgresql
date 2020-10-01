@@ -52,7 +52,8 @@ class PostgresqlCharm(CharmBase):
             return
         self.unit.status = MaintenanceStatus('Starting charm software')
         # Start software
-        self.unit.status = ActiveStatus('Unit is ready')
+        version = pg.get_version()
+        self.unit.status = ActiveStatus(f'PostgreSQL {version} is running')
         self.state.started = True
         logging.info('Started')
 
