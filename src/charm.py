@@ -9,6 +9,7 @@ import logging
 
 from charmtools import apt
 from charmtools import postgres as pg
+from charmtools import tools
 from ops.charm import CharmBase
 from ops.framework import StoredState
 from ops.model import ActiveStatus, MaintenanceStatus
@@ -20,6 +21,7 @@ class PostgresqlCharm(CharmBase):
     """Class reprisenting this Operator charm."""
 
     state = StoredState()
+    listen_port = '5432'
 
     def __init__(self, *args):
         """Initialize charm and configure states and events to observe."""
@@ -53,8 +55,9 @@ class PostgresqlCharm(CharmBase):
         self.unit.status = MaintenanceStatus('Starting charm software')
         # Start software
         version = pg.get_version()
-        self.unit.status = ActiveStatus(f'PostgreSQL {version} is running')
+        self.unit.status = ActiveStatus(f'PostgreSQL {version} running')
         self.state.started = True
+        tools.open_port(self.listen_port)
         logging.info('Started')
 
     def _defer_once(self, event):
@@ -86,7 +89,7 @@ class PostgresqlCharm(CharmBase):
         if database not in self.state.databases:
             network = self.model.get_binding(event.relation).network
             host = str(network.bind_address)
-            database_credentials = pg.create_pg_database_and_user(host, '5432', database)
+            database_credentials = pg.create_pg_database_and_user(host, self.listen_port, database)
             self.state.databases[database] = json.dumps(database_credentials)
         else:
             database_credentials = json.loads(self.state.databases[database])
