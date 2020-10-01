@@ -1,0 +1,35 @@
+repos:
+-   repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v2.5.0
+    hooks:
+    -   id: trailing-whitespace
+    -   id: end-of-file-fixer
+    -   id: double-quote-string-fixer
+    -   id: file-contents-sorter
+        files: 'requirements/.+\.in$'
+-   repo: https://github.com/asottile/pyupgrade
+    rev: v2.3.0
+    hooks:
+    - id: pyupgrade
+      args: [--py36-plus]
+-   repo: local
+    hooks:
+    - id: isort
+      name: isort
+      entry: isort -rc
+      language: system
+      files: '\.py$'
+      exclude: 'settings'
+-   repo: https://github.com/ambv/black
+    rev: 19.10b0
+    hooks:
+    - id: black
+-   repo: https://gitlab.com/pycqa/flake8
+    rev: 3.8.0a2
+    hooks:
+    - id: flake8
+      exclude: 'settings'
+-   repo: https://github.com/pre-commit/pygrep-hooks
+    rev: v1.5.1
+    hooks:
+    -   id: python-check-mock-methods

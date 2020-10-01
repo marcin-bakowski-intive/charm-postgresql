@@ -1,5 +1,4 @@
 #! /usr/bin/env python3
-# -*- coding: utf-8 -*-
 # vim:fenc=utf-8
 # Copyright © 2020 Marcin Bąkowski marcin.bakowski@siriusxm.com
 # Distributed under terms of the GPL license.
@@ -9,10 +8,11 @@ import os
 import tempfile
 import unittest
 
-import setuppath  # noqa:F401
 import mock
 import ops
 import ops.main
+
+import setuppath  # noqa:F401
 from src.charm import PostgresqlCharm
 
 
@@ -29,18 +29,18 @@ class OperatorTestCase(unittest.TestCase):
         cls.patchers = {}
 
         # Prevent framwork from trying to call subprocesses
-        run_patcher = mock.patch("ops.model.ModelBackend._run")
-        cls.patchers["ops.model.ModelBackend._run"] = run_patcher.start()
+        run_patcher = mock.patch('ops.model.ModelBackend._run')
+        cls.patchers['ops.model.ModelBackend._run'] = run_patcher.start()
 
         # Stop unit test from calling fchown
-        fchown_patcher = mock.patch("os.fchown")
-        cls.patchers["os.fchown"] = fchown_patcher.start()
-        chown_patcher = mock.patch("os.chown")
-        cls.patchers["os.chown"] = chown_patcher.start()
+        fchown_patcher = mock.patch('os.fchown')
+        cls.patchers['os.fchown'] = fchown_patcher.start()
+        chown_patcher = mock.patch('os.chown')
+        cls.patchers['os.chown'] = chown_patcher.start()
 
         # Setup mock JUJU Environment variables
-        os.environ["JUJU_UNIT_NAME"] = "mock/0"
-        os.environ["JUJU_CHARM_DIR"] = "."
+        os.environ['JUJU_UNIT_NAME'] = 'mock/0'
+        os.environ['JUJU_CHARM_DIR'] = '.'
 
     @classmethod
     def tearDownClass(cls):
@@ -56,9 +56,9 @@ class OperatorTestCase(unittest.TestCase):
         charm_dir = ops.main._get_charm_dir()
         metadata, actions_metadata = ops.main._load_metadata(charm_dir)
         meta = ops.charm.CharmMeta(metadata, actions_metadata)
-        unit_name = os.environ["JUJU_UNIT_NAME"]
+        unit_name = os.environ['JUJU_UNIT_NAME']
         model = ops.model.Model(unit_name, meta, model_backend)
-        framework = ops.framework.Framework(":memory:", charm_dir, meta, model)
+        framework = ops.framework.Framework(':memory:', charm_dir, meta, model)
         charm = PostgresqlCharm(framework, None)
         self.charm = charm
 
@@ -67,34 +67,34 @@ class OperatorTestCase(unittest.TestCase):
         # Remove runtime class attributes to avoid error on next setUp
 
         for relation_name in self.charm.framework.meta.relations:
-            relation_name = relation_name.replace("-", "_")
-            delattr(ops.charm.CharmEvents, relation_name + "_relation_joined")
-            delattr(ops.charm.CharmEvents, relation_name + "_relation_changed")
-            delattr(ops.charm.CharmEvents, relation_name + "_relation_departed")
-            delattr(ops.charm.CharmEvents, relation_name + "_relation_broken")
+            relation_name = relation_name.replace('-', '_')
+            delattr(ops.charm.CharmEvents, relation_name + '_relation_joined')
+            delattr(ops.charm.CharmEvents, relation_name + '_relation_changed')
+            delattr(ops.charm.CharmEvents, relation_name + '_relation_departed')
+            delattr(ops.charm.CharmEvents, relation_name + '_relation_broken')
 
         for storage_name in self.charm.framework.meta.storages:
-            storage_name = storage_name.replace("-", "_")
-            delattr(ops.charm.CharmEvents, storage_name + "_storage_attached")
-            delattr(ops.charm.CharmEvents, storage_name + "_storage_detaching")
+            storage_name = storage_name.replace('-', '_')
+            delattr(ops.charm.CharmEvents, storage_name + '_storage_attached')
+            delattr(ops.charm.CharmEvents, storage_name + '_storage_detaching')
 
         for action_name in self.charm.framework.meta.actions:
-            action_name = action_name.replace("-", "_")
-            delattr(ops.charm.CharmEvents, action_name + "_action")
+            action_name = action_name.replace('-', '_')
+            delattr(ops.charm.CharmEvents, action_name + '_action')
 
     def emit(self, event):
         """Emit the named hook on the charm."""
         self.charm.framework.reemit()
 
-        if "_relation_" in event:
-            relation_name = event.split("_relation")[0].replace("_", "-")
+        if '_relation_' in event:
+            relation_name = event.split('_relation')[0].replace('_', '-')
             with mock.patch.dict(
-                "os.environ",
+                'os.environ',
                 {
-                    "JUJU_RELATION": relation_name,
-                    "JUJU_RELATION_ID": "1",
-                    "JUJU_REMOTE_APP": "mock",
-                    "JUJU_REMOTE_UNIT": "mock/0",
+                    'JUJU_RELATION': relation_name,
+                    'JUJU_RELATION_ID': '1',
+                    'JUJU_REMOTE_APP': 'mock',
+                    'JUJU_REMOTE_UNIT': 'mock/0',
                 },
             ):
                 ops.main._emit_charm_event(self.charm, event)
@@ -104,7 +104,7 @@ class OperatorTestCase(unittest.TestCase):
     def get_notice_count(self, hook):
         """Return the notice count for a given charm hook."""
         notice_count = 0
-        handle = "PostgresqlCharm/on/{}".format(hook)
+        handle = f'PostgresqlCharm/on/{hook}'
 
         for event_path, _, _ in self.charm.framework._storage.notices(None):
             if event_path.startswith(handle):

@@ -1,5 +1,4 @@
 #! /usr/bin/env python3
-# -*- coding: utf-8 -*-
 # vim:fenc=utf-8
 # Copyright © 2020 Marcin Bakowski marcin.bakowski@siriusxm.com
 
@@ -8,12 +7,13 @@
 import json
 import logging
 
-import setuppath  # noqa:F401
 from charmtools import apt
 from charmtools import postgres as pg
 from ops.charm import CharmBase
 from ops.framework import StoredState
 from ops.model import ActiveStatus, MaintenanceStatus
+
+import setuppath  # noqa:F401
 
 
 class PostgresqlCharm(CharmBase):
@@ -37,24 +37,24 @@ class PostgresqlCharm(CharmBase):
 
     def on_install(self, event):
         """Handle install state."""
-        self.unit.status = MaintenanceStatus("Installing charm software")
+        self.unit.status = MaintenanceStatus('Installing charm software')
         apt.install('postgresql')
-        self.unit.status = MaintenanceStatus("Install complete")
-        logging.info("Install of software complete")
+        self.unit.status = MaintenanceStatus('Install complete')
+        logging.info('Install of software complete')
         self.state.installed = True
 
     def on_start(self, event):
         """Handle start state."""
         if not self.state.configured:
-            logging.warning("Start called before configuration complete, deferring event: {}".format(event.handle))
+            logging.warning(f'Start called before configuration complete, deferring event: {event.handle}')
             self._defer_once(event)
 
             return
-        self.unit.status = MaintenanceStatus("Starting charm software")
+        self.unit.status = MaintenanceStatus('Starting charm software')
         # Start software
-        self.unit.status = ActiveStatus("Unit is ready")
+        self.unit.status = ActiveStatus('Unit is ready')
         self.state.started = True
-        logging.info("Started")
+        logging.info('Started')
 
     def _defer_once(self, event):
         """Defer the given event, but only once."""
@@ -64,12 +64,12 @@ class PostgresqlCharm(CharmBase):
         for event_path, _, _ in self.framework._storage.notices(None):
             if event_path.startswith(handle.split('[')[0]):
                 notice_count += 1
-                logging.debug("Found event: {} x {}".format(event_path, notice_count))
+                logging.debug(f'Found event: {event_path} x {notice_count}')
 
         if notice_count > 1:
-            logging.debug("Not deferring {} notice count of {}".format(handle, notice_count))
+            logging.debug(f'Not deferring {handle} notice count of {notice_count}')
         else:
-            logging.debug("Deferring {} notice count of {}".format(handle, notice_count))
+            logging.debug(f'Deferring {handle} notice count of {notice_count}')
             event.defer()
 
     def on_db_relation_changed(self, event):
@@ -142,7 +142,7 @@ class PostgresqlCharm(CharmBase):
                 self.state.rel_db_map.pop(event.relation.id, None)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     from ops.main import main
 
     main(PostgresqlCharm)

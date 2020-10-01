@@ -11,9 +11,9 @@ class TestCharm(OperatorTestCase):
 
     def test_install(self):
         """Test emitting an install hook."""
-        self.emit("install")
+        self.emit('install')
         self.assertEqual(self.charm.state.installed, True)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     unittest.main()
