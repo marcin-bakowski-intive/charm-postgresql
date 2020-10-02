@@ -29,6 +29,7 @@ class PostgresqlCharm(CharmBase):
         # -- standard hook observation
         self.framework.observe(self.on.install, self.on_install)
         self.framework.observe(self.on.start, self.on_start)
+        self.framework.observe(self.on.config_changed, self.on_config_changed)
         self.framework.observe(self.on.db_relation_changed, self.on_db_relation_changed)
         self.framework.observe(self.on.db_relation_joined, self.on_db_relation_changed)
         self.framework.observe(self.on.db_relation_departed, self.on_db_relation_departed)
@@ -45,6 +46,24 @@ class PostgresqlCharm(CharmBase):
         logging.info('Install of software complete')
         self.state.installed = True
 
+    def on_config_changed(self, event):
+        """Handle config changed."""
+        if not self.state.installed:
+            logging.warning(f'Config changed called before install complete, deferring event: {event.handle}.')
+            self._defer_once(event)
+
+            return
+
+        if self.state.started:
+            # Stop if necessary for reconfig
+            logging.info(f'Stopping for configuration, event handle: {event.handle}')
+        # Configure the software
+        logging.info('Configuring')
+        pg.configure()
+        pg.restart()
+        tools.open_port(self.listen_port)
+        self.state.configured = True
+
     def on_start(self, event):
         """Handle start state."""
         if not self.state.configured:
@@ -57,7 +76,6 @@ class PostgresqlCharm(CharmBase):
         version = pg.get_version()
         self.unit.status = ActiveStatus(f'PostgreSQL {version} running')
         self.state.started = True
-        tools.open_port(self.listen_port)
         logging.info('Started')
 
     def _defer_once(self, event):
@@ -77,6 +95,9 @@ class PostgresqlCharm(CharmBase):
             event.defer()
 
     def on_db_relation_changed(self, event):
+        if not self.model.unit.is_leader():
+            logging.debug(f'Unit {self.model.unit.name} is not leader, skip further event processing')
+            return
         if event.unit not in event.relation.data:
             return
 
@@ -84,6 +105,7 @@ class PostgresqlCharm(CharmBase):
         logging.debug(f'DATABASE CHANGED: {data}')
         database = data.get('database')
         if not database:
+            logging.debug('No database name provided, skip further event processing')
             return
 
         if database not in self.state.databases:
@@ -100,7 +122,7 @@ class PostgresqlCharm(CharmBase):
         self._set_pg_properties(event, database_credentials)
         self._set_extra_pg_properties(event)
 
-        logging.debug(f'DATABASE CHANGED: {self.state.rel_db_map}')
+        logging.debug(f'DATABASE CHANGED: {dict(self.state.rel_db_map)}')
         logging.debug(f'DATABASE CHANGED: {dict(event.relation.data[self.model.unit])}')
 
     def _set_pg_properties(self, event, database_credentials):
@@ -125,6 +147,9 @@ class PostgresqlCharm(CharmBase):
         event.relation.data[self.model.unit]['extensions'] = data.get('extensions', '')
 
     def on_db_relation_departed(self, event):
+        if not self.model.unit.is_leader():
+            logging.debug(f'Unit {self.model.unit.name} is not leader, skip further event processing')
+            return
         logging.debug(f'DATABASE DEPARTED: {event.relation} {event.relation.data} {event.relation.units}')
         data = event.relation.data[self.model.unit]
         logging.debug(f'DATABASE DEPARTED: {data}')
