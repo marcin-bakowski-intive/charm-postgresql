@@ -19,7 +19,6 @@ repos:
       entry: isort -rc
       language: system
       files: '\.py$'
-      exclude: 'settings'
 -   repo: https://github.com/ambv/black
     rev: 19.10b0
     hooks:

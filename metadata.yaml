@@ -1,15 +1,14 @@
 name: postgresql
 summary: Posgresql server charm using operator framework
 maintainers:
-    - Marcin Bąkowski <marcin.bakowski@siriusxm.com>
-description: |
-    Postgresql charm
+  - Marcin Bąkowski <marcin.bakowski@siriusxm.com>
+description: Postgresql charm
 tags:
-    - databases
+  - databases
 series:
-    - bionic
-    - focal
+  - bionic
+  - focal
 provides:
-    db:
-        interface: pgsql
-        optional: true
+  db:
+    interface: pgsql
+    optional: true

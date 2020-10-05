@@ -23,3 +23,6 @@ report/*
 *.charm
 
 build/
+dist/
+*.egg-info
+*.conf

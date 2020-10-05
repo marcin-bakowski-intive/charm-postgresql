@@ -17,7 +17,8 @@ class PGService:
     def __init__(self, host='localhost', user='postgres', port=5432):
         self._host = host
         self._user = user
-        self._port = port
+        self._port = str(port)
+        self._version = None
 
     def set_host(self, host):
         self._host = host
@@ -26,7 +27,7 @@ class PGService:
         self._user = user
 
     def set_port(self, port):
-        self._port = port
+        self._port = str(port)
 
     def create_pg_database_and_user(self, database, username=None):
         username = username or f'juju_{_get_random_string(16)}'
@@ -38,7 +39,7 @@ class PGService:
 
         return {
             'host': self._host,
-            'port': str(self._port),
+            'port': self._port,
             'database': database,
             'user': username,
             'password': password,
@@ -52,9 +53,12 @@ class PGService:
         self._psql(f'DROP USER "{user}"')
 
     def get_version(self):
-        resp = self._psql('SELECT version()').decode('utf-8')
-        m = POSTGRESQL_VERSION_PATTERN.search(resp)
-        return m.group(1) if m else 'UNKNOWN'
+        if not self._version:
+            resp = self._psql('SELECT version()').decode('utf-8')
+            m = POSTGRESQL_VERSION_PATTERN.search(resp)
+            if m:
+                self._version = m.group(1)
+        return self._version
 
     def configure_postgresql_server(self, port):
         self._update_postgresql_conf(port)
@@ -92,7 +96,7 @@ class PGService:
 
     def _get_pg_etc_dir(self):
         version = self.get_version()
-        assert version != 'UNKNOWN'
+        assert version
         major_version = version.split('.')[0]
         return POSTGRESQL_CONF_BASE_DIR / major_version / 'main'
 

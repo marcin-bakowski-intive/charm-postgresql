@@ -11,7 +11,7 @@ configure:
 #   - zaza.charm_tests.noop.setup.basic_setup_xenial
  - zaza.charm_tests.noop.setup.basic_setup
 gate_bundles:
-    - xenial
-    - bionic
+  - bionic
+  - focal
 smoke_bundles:
-    - focal
+  - focal
