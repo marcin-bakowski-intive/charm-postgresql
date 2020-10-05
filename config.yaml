@@ -1,0 +1,5 @@
+options:
+    port:
+        type: int
+        description: 'PostgreSQL listen port'
+        default: 5432
