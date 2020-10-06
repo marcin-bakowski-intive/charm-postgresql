@@ -3,18 +3,25 @@
 Overview
 --------
 
-Provide your product pitch for this charm here.
+PostgreSQL server charm.
 
 Quickstart
 ----------
 
-Provide a quick tutorial on getting started with this charm, ideally step by
-step.
+Build charm:
+```
+$ tox -e charm
+```
 
-Scaling
--------
+Deploy charm on existing juju model:
+```
+$ juju deploy ./postgresql.charm
+```
 
-Provide instructions for scaling this charm.
+Add `db` relation between posgresql and django juju apps:
+```
+$ juju relate django-app posgresql
+```
 
 Contact
 -------
